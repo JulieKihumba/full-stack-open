@@ -1,29 +1,38 @@
 import React from "react";
-import Notes from "./components/Notes";
+import Note from "./components/Note";
 
-const App = () => {
-  const notes = [
-    {
-      id: 1,
-      content: "HTML is easy",
-      important: true,
-    },
-    {
-      id: 2,
-      content: "Browser can execute only JavaScript",
-      important: false,
-    },
-    {
-      id: 3,
-      content: "GET and POST are the most important methods of HTTP protocol",
-      important: true,
-    },
-  ];
+const App = ({ notes }) => {
+  // const [notes, setNotes] = React.useState(notes);
+  const [newNote, setNewNote] = React.useState("");
+  const [showAll, setShowAll] = React.useState(true);
+
+  const addNote=(e) => {
+    e.preventDefault();
+    console.log("clicked");
+  }
+  const handleNoteChange=(e) => {
+    console.log(e.target.value);
+    setNewNote(e.target.value);
+  }
+  const notesToShow = showAll ? notes: notes.filter(note => note.important===true )
 
   return (
     <div>
       <h1>Notes</h1>
-      <Notes notes={notes} />
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all'}
+        </button>
+      </div>
+      <ul>
+        {notesToShow.map((note, index) => (
+          <Note key={index} note={note} />
+        ))}
+      </ul>
+      <form>
+        <input type="text" value={newNote} onChange={handleNoteChange} />
+        <button type="submit" onClick={addNote}>Save</button>
+      </form>
     </div>
   );
 };
