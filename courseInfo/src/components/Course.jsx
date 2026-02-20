@@ -1,12 +1,11 @@
 import React from 'react'
-import Header from './Header'
 import Content from './Content'
 
-const Course = ({course}) => {
+const Course = ({courses}) => {
   return (
     <div>
-<Header course={course} />
-<Content course={course} />
+{courses.map((course, index) => <Content key={index} course={course} />)}
+<h4> TOTAL: {courses.reduce((total, course) => total + course.parts.reduce((sum, part) => sum + part.exercises, 0), 0)}</h4>
     </div>
   )
 }

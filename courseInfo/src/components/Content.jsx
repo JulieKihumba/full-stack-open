@@ -1,9 +1,11 @@
 import React from "react";
 import Part from "./Part";
+import Header from "./Header";
 
 const Content = ({ course }) => {
   return (
     <div>
+      <Header course={course} />
       <ul>
         {course.parts.map((part, index) => (
           <Part key={index} part={part} />
