@@ -1,4 +1,8 @@
 import { useState } from "react";
+import PersonForm from "./components/PersonForm";
+import Filter from "./components/Filter";
+import Persons from "./components/Persons";
+
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -7,83 +11,49 @@ const App = () => {
     { name: "Dan Abramov", number: "12-43-234345", id: 3 },
     { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
   ]);
-  const [newName, setNewName] = useState("");
-  const [newNumber, setNewNumber] = useState("");
-  const [filter, setFilter] = useState("");
 
-  const addName = (e) => {
-    e.preventDefault();
-    const nameExists = persons.some((person) => person.name === newName);
-    const numberExists = persons.some((person) => person.number === newNumber);
+  const [personsToShow, setPersonsToShow] = useState(persons);
+
+  
+  const addPerson = (name, number) => {
+    const nameExists = persons.some((person) => person.name === name);
+    const numberExists = persons.some((person) => person.number === number);
     if (nameExists) {
-      alert(`${newName} is already added to phonebook`);
-      return;
+      alert(`${name} is already added to phonebook`);
+      return false;
     }
     if (numberExists) {
-      alert(`${newNumber} is already added to phonebook`);
-      return;
+      alert(`${number} is already added to phonebook`);
+      return false;
     }
 
     const personObject = {
-      name: newName,
-      number: newNumber,
+      name: name,
+      number: number,
     };
     setPersons(persons.concat(personObject));
-    //resets the value of the input field to empty string after adding a name
-    setNewName("");
-    setNewNumber("");
+    return true;
   };
 
-  const handleNameChange = (e) => {
-    setNewName(e.target.value);
+  const handleFilter = (filterValue) => {
+    const filtered = filterValue
+      ? persons.filter((person) =>
+          person.name.toLowerCase().includes(filterValue.toLowerCase())
+        )
+      : persons;
+    setPersonsToShow(filtered);
   };
-  const handleNumberChange = (e) => {
-    setNewNumber(e.target.value);
-  };
-
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
-  };
-
-  const personsToShow = filter
-    ? persons.filter((person) =>
-        person.name.toLowerCase().includes(filter.toLowerCase())
-      )
-    : persons;
 
   return (
     <div>
       <h1>PHONEBOOK</h1>
-      <div>
-        filter shown with <input type="text" onChange={handleFilterChange} />
-      </div>
+      <Filter onFilter={handleFilter} />
+
       <h2>Add a new: </h2>
-      <form>
-        <div>
-          <label>Name: </label>
-          <input type="text" value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-          <label>Phone Number: </label>
-          <input
-            type="number"
-            value={newNumber}
-            onChange={handleNumberChange}
-          />
-        </div>
-        <button type="submit" onClick={addName}>
-          Save
-        </button>
-      </form>
+      <PersonForm addPerson={addPerson} />
 
       <h2>Numbers</h2>
-      <ul>
-        {personsToShow.map((person, index) => (
-          <li key={index}>
-            {person.name}- {person.number}
-          </li>
-        ))}
-      </ul>
+      <Persons persons={personsToShow} />
     </div>
   );
 };
