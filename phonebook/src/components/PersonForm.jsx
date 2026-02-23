@@ -4,16 +4,14 @@ const PersonForm = ({ addPerson }) => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
 
-  const addName = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    const success = addPerson(newName, newNumber);
-    
-    if (success) {
-      //resets the value of the input field to empty string after adding a name
-      setNewName("");
-      setNewNumber("");
-    }
+
+    addPerson(newName, newNumber);
+
+    //resets the value of the input field to empty string after adding a name
+    setNewName("");
+    setNewNumber("");
   };
 
   const handleNameChange = (e) => {
@@ -25,22 +23,16 @@ const PersonForm = ({ addPerson }) => {
 
   return (
     <div>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div>
           <label>Name: </label>
           <input type="text" value={newName} onChange={handleNameChange} />
         </div>
         <div>
           <label>Phone Number: </label>
-          <input
-            type="number"
-            value={newNumber}
-            onChange={handleNumberChange}
-          />
+          <input type="text" value={newNumber} onChange={handleNumberChange} />
         </div>
-        <button type="submit" onClick={addName}>
-          Save
-        </button>
+        <button type="submit">Save</button>
       </form>
     </div>
   );
