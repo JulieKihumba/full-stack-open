@@ -1,7 +1,15 @@
 import express from "express";
+import morgan from "morgan";
 const app = express();
 
 app.use(express.json());
+
+//Define a custom Morgan token for the body
+morgan.token("body", (request) => {
+  return JSON.stringify(request.body);
+});
+//Use the custom token in your Morgan log format
+app.use(morgan(":method :url :status :response-time ms - :body"));
 
 let notes = [
   {
