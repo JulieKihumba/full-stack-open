@@ -16,9 +16,7 @@ const App = () => {
   }, []);
 
   const addPerson = (newName, newNumber) => {
-    const personExists = persons.find(
-      (person) => person.name === newName
-    );
+    const personExists = persons.find((person) => person.name === newName);
 
     if (personExists) {
       if (personExists.number === newNumber) {
@@ -28,7 +26,7 @@ const App = () => {
 
       if (
         window.confirm(
-          `${newName} is already added to phonebook, replace the old number with a new one?`
+          `${newName} is already added to phonebook, replace the old number with a new one?`,
         )
       ) {
         const changedPerson = { ...personExists, number: newNumber };
@@ -38,8 +36,8 @@ const App = () => {
           .then((returnedPerson) => {
             setPersons(
               persons.map((p) =>
-                p.id !== personExists.id ? p : returnedPerson
-              )
+                p.id !== personExists.id ? p : returnedPerson,
+              ),
             );
           });
       }
@@ -60,18 +58,24 @@ const App = () => {
   const handleFilter = (filterValue) => {
     const filtered = filterValue
       ? persons.filter((person) =>
-          person.name.toLowerCase().includes(filterValue.toLowerCase())
+          person.name.toLowerCase().includes(filterValue.toLowerCase()),
         )
       : persons;
     setPersonsToShow(filtered);
   };
 
   const deletePerson = (id) => {
-    const person = persons.find((p) => p.id === id);
+    // ✅ Search in personsToShow instead of persons
+    const person = personsToShow.find((p) => p.id === id);
+
+    if (!person) return; // ✅ safety guard
+
     if (window.confirm(`Are you sure you want to delete ${person.name}`)) {
-      personsService
-        .remove(id)
-        .then(() => setPersons(persons.filter((p) => p.id !== id))); // ✅ Fix 2
+      personsService.remove(id).then(() => {
+        const updated = persons.filter((p) => p.id !== id);
+        setPersons(updated);
+        setPersonsToShow(updated); // ✅ update both!
+      });
     }
   };
 
