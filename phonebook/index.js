@@ -1,5 +1,7 @@
 import express from "express";
 import morgan from "morgan";
+import { fileURLToPath } from 'url'
+import path from 'path'
 
 const app = express();
 
@@ -35,19 +37,20 @@ let persons = [
   },
 ];
 
-app.get("/", (request, response) => {
-  response.send("hello world");
-});
+// ⚠️ Remove this route — the wildcard below will handle "/"
+// app.get("/", (request, response) => {
+//   response.send("hello world");
+// });
 
 //fetching all persons
-app.get("/api/persons", (requesst, response) => {
+app.get("/api/persons", (request, response) => {
   response.json(persons);
 });
 
-//info page to diplay number of entries and time request was made
+//info page to display number of entries and time request was made
 app.get("/info", (request, response) => {
-  const requestTime = new Date(); //time of request
-  const count = persons.length; //count entries
+  const requestTime = new Date();
+  const count = persons.length;
 
   response.send(`
     <p>Phonebook has info for ${count} people</p>
@@ -69,28 +72,25 @@ app.get("/api/persons/:id", (request, response) => {
 app.delete("/api/persons/:id", (request, response) => {
   const id = request.params.id;
   persons = persons.filter((person) => person.id !== id);
-
   response.status(204).end();
 });
 
 //adding a new person
-
 const generateId = () => {
   const maxId =
     persons.length > 0 ? Math.max(...persons.map((n) => Number(n.id))) : 0;
   return maxId + 1;
 };
+
 app.post("/api/persons", (request, response) => {
   const body = request.body;
 
-  //check if name or number is missing
   if (!body.name || !body.number) {
     return response.status(400).json({
       error: "name or number is missing",
     });
   }
 
-  //check if name exists
   const nameExists = persons.find((person) => person.name === body.name);
   if (nameExists) {
     return response.status(400).json({
@@ -98,7 +98,6 @@ app.post("/api/persons", (request, response) => {
     });
   }
 
-  // If validation passes, create the new entry
   const person = {
     id: generateId(),
     name: body.name,
@@ -106,13 +105,23 @@ app.post("/api/persons", (request, response) => {
   };
 
   persons = persons.concat(person);
-
   console.log(person);
   response.json(person);
 });
 
+// Serve the built React frontend
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+app.use(express.static(path.join(__dirname, 'dist')))
+
+// ✅ Fixed for Express 5:
+app.get('/*path', (request, response) => {
+  response.sendFile(path.join(__dirname, 'dist', 'index.html'))
+})
+
 //listens for a request
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
