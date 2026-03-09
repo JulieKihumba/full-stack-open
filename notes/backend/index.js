@@ -21,8 +21,8 @@ let notes = [
   },
 ];
 
-app.get("/", (require, response) => {
-  response.send("server is running");
+app.get("/", (request, response) => {
+  response.send("<h1>Hello World!</h1>");
 });
 
 app.get("/api/notes", (request, response) => {
