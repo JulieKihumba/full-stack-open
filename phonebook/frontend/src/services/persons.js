@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseUrl = "https://phonebook-backend-taupe.vercel.app/";
+const baseUrl = "https://phonebook-backend-taupe.vercel.app/api/persons";
 
 const getAll = () => {
   const request = axios.get(baseUrl);
