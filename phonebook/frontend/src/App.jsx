@@ -6,13 +6,17 @@ import personsService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
+  const [filter, setFilter] = useState('');
 
-  const [personsToShow, setPersonsToShow] = useState(persons);
+  const personsToShow = filter
+    ? persons.filter((p) =>
+        p.name.toLowerCase().includes(filter.toLowerCase())
+      )
+    : persons;
 
   useEffect(() => {
     personsService.getAll().then((initialPersons) => {
       setPersons(initialPersons);
-      setPersonsToShow(initialPersons);
     });
   }, []);
 
@@ -32,17 +36,13 @@ const App = () => {
       ) {
         const changedPerson = { ...personExists, number: newNumber };
 
-        personsService
-          .update(personExists.id, changedPerson)
-          .then((returnedPerson) => {
-            setPersons(
-              persons.map((p) =>
-                p.id !== personExists.id ? p : returnedPerson,
-              ),
-            );
-          });
+        personsService.update(personExists.id, changedPerson).then((returnedPerson) => {
+          setPersons((prev) =>
+            prev.map((p) => (p.id !== personExists.id ? p : returnedPerson))
+          );
+        });
+        return;
       }
-
       return;
     }
 
@@ -52,27 +52,19 @@ const App = () => {
     };
 
     personsService.create(personObject).then((returnedPerson) => {
-      setPersons(persons.concat(returnedPerson));
-      setPersonsToShow(personsToShow.concat(returnedPerson));
+      setPersons((prev) => [...prev, returnedPerson]);
     });
   };
 
-  const handleFilter = (filterValue) => {
-    const filtered = filterValue
-      ? persons.filter((person) =>
-          person.name.toLowerCase().includes(filterValue.toLowerCase()),
-        )
-      : persons;
-    setPersonsToShow(filtered);
+  const handleFilterChange = (value) => {
+    setFilter(value);
   };
 
   const deletePerson = (id) => {
-    //find persons name to use in the message
     const person = persons.find((p) => p.id === id);
     if (window.confirm(`Are you sure you want to delete ${person.name}`)) {
       personsService.remove(id).then(() => {
         setPersons(persons.filter((p) => p.id !== id));
-        setPersonsToShow(personsToShow.filter((p) => p.id !== id));
       });
     }
   };
@@ -80,9 +72,9 @@ const App = () => {
   return (
     <div>
       <h1>PHONEBOOK</h1>
-      <Filter onFilter={handleFilter} />
+      <Filter onFilter={handleFilterChange} />
 
-      <h2>Add a new: </h2>
+      <h2>Add a new</h2>
       <PersonForm addPerson={addPerson} />
 
       <h2>Numbers</h2>
