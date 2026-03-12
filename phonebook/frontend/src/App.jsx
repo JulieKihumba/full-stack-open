@@ -16,47 +16,46 @@ const App = () => {
     });
   }, []);
 
-const addPerson = (newName, newNumber) => {
-  const personExists = persons.find(
-    (person) => person.name === newName
-  );
+  const addPerson = (newName, newNumber) => {
+    const personExists = persons.find((person) => person.name === newName);
 
-  if (personExists) {
-    if (personExists.number === newNumber) {
-      alert(`${newName} is already added to phonebook with this number`);
+    if (personExists) {
+      if (personExists.number === newNumber) {
+        alert(`${newName} is already added to phonebook with this number`);
+        return;
+      }
+
+      if (
+        window.confirm(
+          `${newName} is already added to phonebook, replace the old number with a new one?`,
+        )
+      ) {
+        const changedPerson = { ...personExists, number: newNumber };
+
+        personsService
+          .update(personExists.id, changedPerson)
+          .then((returnedPerson) => {
+            setPersons(
+              persons.map((p) =>
+                p.id !== personExists.id ? p : returnedPerson,
+              ),
+            );
+          });
+      }
+
       return;
     }
 
-    if (
-      window.confirm(
-        `${newName} is already added to phonebook, replace the old number with a new one?`
-      )
-    ) {
-      const changedPerson = { ...personExists, number: newNumber };
+    const personObject = {
+      name: newName,
+      number: newNumber,
+    };
 
-      personsService
-        .update(personExists.id, changedPerson)
-        .then((returnedPerson) => {
-          setPersons(
-            persons.map((p) =>
-              p.id !== personExists.id ? p : returnedPerson
-            )
-          );
-        });
-    }
-
-    return;
-  }
-
-  const personObject = {
-    name: newName,
-    number: newNumber,
+    personsService.create(personObject).then((returnedPerson) => {
+      setPersons(persons.concat(returnedPerson));
+      setPersonsToShow(personsToShow.concat(returnedPerson));
+    });
   };
-
-  personsService.create(personObject).then((returnedPerson) => {
-    setPersons(persons.concat(returnedPerson));
-  });
-};
 
   const handleFilter = (filterValue) => {
     const filtered = filterValue
@@ -71,9 +70,10 @@ const addPerson = (newName, newNumber) => {
     //find persons name to use in the message
     const person = persons.find((p) => p.id === id);
     if (window.confirm(`Are you sure you want to delete ${person.name}`)) {
-      personsService
-        .remove(id)
-        .then(setPersons(persons.filter((p) => p.id !== id)));
+      personsService.remove(id).then(() => {
+        setPersons(persons.filter((p) => p.id !== id));
+        setPersonsToShow(personsToShow.filter((p) => p.id !== id));
+      });
     }
   };
 
