@@ -12,14 +12,14 @@ app.get("/", (request, response) => {
 });
 
 app.get("/info", (request, response) => {
-  const count = persons.length;
-  const time = new Date().toString();
-  const infoContent = `
-    <h1>Phonebook Info</h1>
-    <p>Phonebook has ${count} entries.</p>
-    <p>${time}</p>
-  `;
-  response.send(infoContent);
+  Person.countDocuments({}).then((count) => {
+    const time = new Date().toString();
+
+    response.send(`
+      <p>Phonebook has info for ${count} people</p>
+      <p>${time}</p>
+    `);
+  });
 });
 
 //getting all persons
@@ -29,7 +29,7 @@ app.get("/api/persons", (request, response) => {
 
 //getting one person
 app.get("/api/persons/:id", (request, response) => {
-  Person.findById(request.params.id).then((note) => {
+  Person.findById(request.params.id).then((person) => {
     if (person) {
       response.json(person);
     } else {
@@ -49,17 +49,18 @@ app.post("/api/persons", (request, response) => {
     });
   }
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
 
-  person.save().then((savedPerson) => response.json(savedPerson));
-});
+person.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });});
 
 // deleting a person
 app.delete("/api/persons/:id", (request, response) => {
-  Person.findOneAndDelete(request.params.id).then(() => {
+  Person.findByIdAndDelete(request.params.id).then(() => {
     response.status(204).end();
   });
 });
