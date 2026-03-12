@@ -19,7 +19,11 @@ app.get("/api/notes", (request, response) => {
 
 app.get("/api/notes/:id", (request, response) => {
   Note.findById(request.params.id).then((note) => {
-    response.json(note);
+    if (note) {
+      response.json(note);
+    } else {
+      response.status(404).end();
+    }
   });
 });
 
@@ -41,10 +45,9 @@ app.post("/api/notes", (request, response) => {
 });
 
 app.delete("/api/notes/:id", (request, response) => {
-  const id = request.params.id;
-  notes = notes.filter((note) => note.id !== id);
-
-  response.status(204).end();
+  Note.findByIdAndDelete(request.params.id).then(() => {
+    response.status(204).end();
+  });
 });
 
 const PORT = process.env.PORT;
