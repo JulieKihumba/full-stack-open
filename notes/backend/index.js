@@ -1,15 +1,29 @@
 require("dotenv").config();
+
 const express = require("express");
-const app = express();
 const cors = require("cors");
 const Note = require("./models/note");
 
+const app = express();
+
 app.use(cors());
-app.use(express.static("dist"));
 app.use(express.json());
+
+// OPTIONAL: serve frontend build if it exists
+app.use(express.static("dist"));
+
+/* ---------------- REQUEST LOGGER ---------------- */
+const requestLogger = (request, response, next) => {
+  console.log("Method:", request.method);
+  console.log("Path:", request.path);
+  console.log("Body:", request.body);
+  console.log("---");
+  next();
+};
+
 app.use(requestLogger);
 
-// ROUTES
+/* ---------------- ROUTES ---------------- */
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
@@ -46,59 +60,61 @@ app.post("/api/notes", (request, response, next) => {
     .then((savedNote) => {
       response.json(savedNote);
     })
-
     .catch((error) => next(error));
 });
 
 app.put("/api/notes/:id", (request, response, next) => {
   const { content, important } = request.body;
 
-  Note.findById(request.params.id)
-    .then((note) => {
-      if (!note) {
-        return response.status(404).end();
-      }
+  const note = { content, important };
 
-      note.content = content;
-      note.important = important;
-
-      return note.save().then((updatedNote) => {
-        response.json(updatedNote);
-      });
+  Note.findByIdAndUpdate(request.params.id, note, {
+    new: true,
+    runValidators: true,
+    context: "query",
+  })
+    .then((updatedNote) => {
+      response.json(updatedNote);
     })
     .catch((error) => next(error));
 });
 
-app.delete("/api/notes/:id", (request, response) => {
-  Note.findByIdAndDelete(request.params.id).then(() => {
-    response.status(204).end();
-  });
+app.delete("/api/notes/:id", (request, response, next) => {
+  Note.findByIdAndDelete(request.params.id)
+    .then(() => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
-// UNKNOWN ENDPOINT HANDLER
+/* ---------------- UNKNOWN ENDPOINT ---------------- */
+
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
 app.use(unknownEndpoint);
 
-// ERROR HANDLER
+/* ---------------- ERROR HANDLER ---------------- */
+
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
-  } else if (error.name === "ValidationError") {
+  }
+
+  if (error.name === "ValidationError") {
     return response.status(400).json({ error: error.message });
   }
 
   next(error);
 };
 
-// this must be the LAST middleware
 app.use(errorHandler);
 
-// SERVER
+/* ---------------- SERVER ---------------- */
+
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
