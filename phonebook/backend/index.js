@@ -80,6 +80,26 @@ app.post("/api/persons", (request, response, next) => {
     .catch((error) => next(error));
 });
 
+//update person
+app.put("/api/persons/:id", (request, response, next) => {
+  const { name, number } = request.body;
+
+  const person = {
+    name: name,
+    number: number,
+  };
+  //finds person and updates it
+  Person.findByIdAndUpdate(request.params.id, person, {
+    new: true, //returms updated person instead of the old one
+    runValidators: true,
+    context: "query",
+  })
+    .then((updatedPerson) => {
+      response.json(updatedPerson);
+    })
+    .catch((error) => next(error));
+});
+
 // delete person
 app.delete("/api/persons/:id", (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
@@ -88,26 +108,6 @@ app.delete("/api/persons/:id", (request, response, next) => {
     })
     .catch((error) => next(error));
 });
-
-//update person
-app.put('/api/persons/:id', (request, response, next) => {
-  const { name, number } = request.body
-
-  Note.findById(request.params.id)
-    .then(person => {
-      if (!person) {
-        return response.status(404).end()
-      }
-
-      person.name = name
-      person.number = number
-
-      return person.save().then((updatedPerson) => {
-        response.json(updatedPerson)
-      })
-    })
-    .catch(error => next(error))
-})
 
 // UNKNOWN ENDPOINT
 
