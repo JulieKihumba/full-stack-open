@@ -4,7 +4,6 @@ const cors = require("cors");
 
 const app = express();
 const Person = require("./models/person");
-const person = require("./models/person");
 
 // MIDDLEWARE
 
@@ -124,6 +123,10 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  }
+  //handle validation errors
+  else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);

@@ -3,10 +3,12 @@ import PersonForm from "./components/PersonForm";
 import Filter from "./components/Filter";
 import Persons from "./components/Persons";
 import personsService from "./services/persons";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState('');
+  const [errorMessage, setErrorMessage] = useState(null)
 
   const personsToShow = filter
     ? persons.filter((p) =>
@@ -36,11 +38,18 @@ const App = () => {
       ) {
         const changedPerson = { ...personExists, number: newNumber };
 
-        personsService.update(personExists.id, changedPerson).then((returnedPerson) => {
-          setPersons((prev) =>
-            prev.map((p) => (p.id !== personExists.id ? p : returnedPerson))
-          );
-        });
+        personsService.update(personExists.id, changedPerson)
+          .then((returnedPerson) => {
+            setPersons((prev) =>
+              prev.map((p) => (p.id !== personExists.id ? p : returnedPerson))
+            );
+          })
+          .catch((error) => {
+            setErrorMessage(error.response.data.error);
+            setTimeout(() => {
+              setErrorMessage(null);
+            }, 5000);
+          });
         return;
       }
       return;
@@ -51,9 +60,16 @@ const App = () => {
       number: newNumber,
     };
 
-    personsService.create(personObject).then((returnedPerson) => {
-      setPersons((prev) => [...prev, returnedPerson]);
-    });
+    personsService.create(personObject)
+      .then((returnedPerson) => {
+        setPersons((prev) => [...prev, returnedPerson]);
+      })
+      .catch((error) => {
+        setErrorMessage(error.response.data.error);
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
+      });
   };
 
   const handleFilterChange = (value) => {
@@ -72,6 +88,7 @@ const App = () => {
   return (
     <div>
       <h1>PHONEBOOK</h1>
+      <Notification message={errorMessage} />
       <Filter onFilter={handleFilterChange} />
 
       <h2>Add a new</h2>
