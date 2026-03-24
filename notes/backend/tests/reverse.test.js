@@ -1,8 +1,12 @@
+//gives tool to create test
 const { test } = require('node:test')
+// a judge....checks if this is correct or wrong
 const assert = require('node:assert')
 
+//bring reverse function into the test file
 const reverse = require('../utils/for_testing').reverse
 
+//the actual test
 test('reverse of a', () => {
   const result = reverse('a')
 
