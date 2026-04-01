@@ -23,7 +23,7 @@ mongoose
 
 app.use(
   cors({
-    origin: "https://notes-frontend-dusky.vercel.app/",
+    origin: "https://notes-frontend-dusky.vercel.app",
   }),
 );
 app.use(express.static("dist"));
